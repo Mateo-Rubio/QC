@@ -117,9 +117,7 @@ def figure_it_out_7(init_vector):
     qr = QuantumRegister(2)
     qc = QuantumCircuit(qr)
     qc.initialize(init_vector)
-    print(Statevector(qc))
     qc.cx(qr[0],qr[1])
-    print(Statevector(qc))
     return Statevector.from_instruction(qc)
 
 
@@ -130,6 +128,14 @@ def figure_it_out_8(init_vector):
     Args:
         init_vector
     """
+    qr = QuantumRegister(3)
+    qc = QuantumCircuit(qr)
+    qc.initialize(init_vector)
+    qc.cx(qr[1], qr[0]) 
+    qc.h(qr[0])
+    qc.h(qr[1])
+    qc.h(qr[2])
+    return Statevector.from_instruction(qc)
 
 
 if __name__ == '__main__':
