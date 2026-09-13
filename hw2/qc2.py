@@ -10,6 +10,13 @@ def figure_it_out_1():
     Args:
         None
     """
+    qr=QuantumRegister(2)
+    qc = QuantumCircuit(qr)
+    qc.x(qr[1])
+    qc.h(qr[0]);qc.h(qr[1])
+    return Statevector.from_instruction(qc)
+
+
 
 
 def figure_it_out_2():
@@ -18,6 +25,14 @@ def figure_it_out_2():
     Args:
         None
     """
+    qr=QuantumRegister(2)
+    qc = QuantumCircuit(qr)
+    qc.x(qr[0])
+    qc.h(qr[0]);qc.h(qr[1])
+    return Statevector.from_instruction(qc)
+
+
+    
 
 
 def figure_it_out_3():
@@ -26,6 +41,11 @@ def figure_it_out_3():
     Args:
         None
     """
+    qr=QuantumRegister(2)
+    qc = QuantumCircuit(qr)
+    qc.x(qr[0]);qc.x(qr[1])
+    qc.h(qr[0]);qc.h(qr[1])
+    return Statevector.from_instruction(qc)
 
 
 def figure_it_out_4():
@@ -34,6 +54,13 @@ def figure_it_out_4():
     Args:
         None
     """
+    qr = QuantumRegister(2)
+    qc = QuantumCircuit(qr)
+    qc.h(qr[0])
+    qc.cx(qr[0], qr[1])
+    qc.x(qr[0])
+    return Statevector.from_instruction(qc)
+
 
 
 def figure_it_out_5(v):
@@ -50,6 +77,13 @@ def figure_it_out_5(v):
     Args:
         vector that is multiplied by the matrix
     """
+    M = np.zeros((4,4))
+    M[:,0] = np.array([1 if i == 3 else 0 for i in range(4)])
+    M[:,1] = np.array([1 if i == 2 else 0 for i in range(4)])
+    M[:,2] = np.array([1 if i == 0 else 0 for i in range(4)])
+    M[:,3] = np.array([1 if i == 1 else 0 for i in range(4)])
+    return np.array([M@v])
+
 
 
 def figure_it_out_6(v):
@@ -66,6 +100,12 @@ def figure_it_out_6(v):
     Args:
         vector that is multiplied by the matrix
     """
+    M = np.zeros((8,8))
+    M[:,1] = np.array([1 if j == 7 else 0 for j in range(8)])
+    M[:,3] = np.array([1 if j == 2 else 0 for j in range(8)]) 
+    M[:,6] = np.array([1 if j == 3 else 0 for j in range(8)]) 
+    M[:,7] = np.array([1 if j == 5 else 0 for j in range(8)])   
+    return np.array([M@v])
 
 
 def figure_it_out_7(init_vector):
@@ -74,6 +114,14 @@ def figure_it_out_7(init_vector):
     Args:
         init_vector
     """
+    qr = QuantumRegister(2)
+    qc = QuantumCircuit(qr)
+    qc.initialize(init_vector)
+    print(Statevector(qc))
+    qc.cx(qr[0],qr[1])
+    print(Statevector(qc))
+    return Statevector.from_instruction(qc)
+
 
 
 def figure_it_out_8(init_vector):

@@ -135,14 +135,14 @@ Pregunta 10. "El cifrado da confidencialidad, no integridad." Segun la
 # Escriba aqui sus respuestas (la letra entre comillas, p. ej. "A").
 # Deje None en las que no responda.
 RESPUESTAS = {
-    1: None,
-    2: None,
-    3: None,
-    4: None,
-    5: None,
-    6: None,
-    7: None,
-    8: None,
-    9: None,
-    10: None,
+    1: "B",
+    2: "A",
+    3: "C",
+    4: "B",
+    5: "A",
+    6: "B",
+    7: "A",
+    8: "B",
+    9: "B",
+    10: "A",
 }
