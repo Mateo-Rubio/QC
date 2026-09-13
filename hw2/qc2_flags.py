@@ -25,8 +25,8 @@ No modifique nada mas de este archivo.
 
 # Pegue aqui los flags capturados (texto entre comillas). Deje "" los que no tenga.
 FLAGS = {
-    1: "",
-    2: "",
+    1: "uniandes{2d6a7bb19e49b4178c8d6fd7}",
+    2: "uniandes{3bbd6d1aa43f3a0bcdf47c07}",
     3: "",
     4: "",
     5: "",
