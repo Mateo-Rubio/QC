@@ -15,16 +15,16 @@ def padding_valido(cookie: bytes) -> bool:
     return b"Padding Invalido" not in f.readline()
 
 cookie = bytearray(enc)
-reves = bytearray()
+X = bytearray(16)
+Y = bytearray(16)
 for i in range(2):
     C1 = cookie[i*16: (i+1)*16]
     cookie_mod = cookie
     for j in range(15,-1,-1):
-        k = j + 1
         print("j:",j)
-        while k <= 15:
+        for k in range(15,j,-1):
             print("k:", k)
-            C1[k] = 15-j
+            C1[k] = Y[k] ^ (16-j) 
             k+=1 
         for byte_value in range(256):
 #           if byte_value == 0 and j == 15: 
@@ -33,10 +33,10 @@ for i in range(2):
             cookie_mod[i*16: (i+1)*16] = C1
             if padding_valido(bytes(cookie_mod)):
                 print(byte_value)
-                reves.append(byte_value)
-                print(reves)
+                X[j] = byte_value
+                Y[j] = byte_value ^ 16-j 
                 break
-print(reves)
+print(X)
 
 
 
