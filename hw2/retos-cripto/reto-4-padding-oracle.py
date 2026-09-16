@@ -1,4 +1,5 @@
 import socket
+import math
 s = socket.socket(); s.connect(("32.199.164.87", 1342))
 f = s.makefile("rwb")
 enc = None
@@ -12,31 +13,90 @@ while True:
 
 def padding_valido(cookie: bytes) -> bool:
     f.write(cookie.hex().encode() + b"\n"); f.flush()
-    return b"Padding Invalido" not in f.readline()
+    linea = f.readline()
+    return b"Padding Invalido" not in linea
 
+max_blocks = math.ceil(len(enc)/16)
 cookie = bytearray(enc)
-X = bytearray(16)
-Y = bytearray(16)
-for i in range(2):
-    C1 = cookie[i*16: (i+1)*16]
-    cookie_mod = cookie
+X_array = bytearray(16*max_blocks)
+Y_array = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x007\x8d\x18(9h\x1e\xabb\t\xe3\x7f\xf2\x06f-\x02\x11f\x84\x8dWHo\xe5\t\xf6\xf2\xa7\xfbJ8\xab\x1e\xfdT\x91\x1d\xce\xe4J\x8anFu\x16*@k\xf0\xbf\xab\xc7\xf6\'2]|\xfeu\n9\xa9(5\xab!\x89"\xc6\x02\x93;Hqf\x07c\xcaP')
+P_array = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00{"username":"invitado","is_admin":"false","expires":"2020-01-01"}\x0f\x0f\x0f\x0f\x0f\x0f\x0f\x0f\x0f\x0f\x0f\x0f\x0f\x0f\x0f')
+'''
+for i in range(max_blocks-1):
+    val = True
+    C1 = cookie[i*16: (i+1)*16];C1_real = cookie[i*16: (i+1)*16]
+    C2 = cookie[(i+1)*16: (i+2)*16]
+    X = X_array[i*16: (i+1)*16]
+    Y = Y_array[(i+1)*16: (i+2)*16]
+    P = P_array[(i+1)*16: (i+2)*16]
     for j in range(15,-1,-1):
-        print("j:",j)
         for k in range(15,j,-1):
-            print("k:", k)
             C1[k] = Y[k] ^ (16-j) 
-            k+=1 
         for byte_value in range(256):
-#           if byte_value == 0 and j == 15: 
-#                continue 
             C1[j] = byte_value
-            cookie_mod[i*16: (i+1)*16] = C1
-            if padding_valido(bytes(cookie_mod)):
-                print(byte_value)
+            val = padding_valido(bytes(C1 + C2))
+            if val:
                 X[j] = byte_value
-                Y[j] = byte_value ^ 16-j 
+                Y[j] = byte_value ^ (16-j) 
+                P[j] = Y[j] ^ C1_real[j]
+                print(bytes(P).decode())
                 break
-print(X)
+        if not val:
+            print("no funcionó")
+            break
+    X_array[i*16: (i+1)*16] = X
+    Y_array[(i+1)*16: (i+2)*16] = Y
+    P_array[(i+1)*16: (i+2)*16] = P
+    if not val: 
+        break 
+with open('archivo.bin', 'wb') as f:
+    f.write(Y_array)
+    f.write(X_array)
+    f.write(P_array)
+'''
+
+'''
+IV            = cookie[0:16]
+Bloque A [16:32]: {"username":"inv
+Bloque B [32:48]: itado","is_admin
+Bloque C [48:64]: ":"false","expir
+Bloque D [64:80]: es":"2020-01-01"
+Bloque E [80:96]: } + padding
+'''
+C = []
+mensajes = [ b'es":"2099-12-31"', b'":"true" ,"expir', b'itado","is_admin', ]
+for i in range(2,-1,-1):
+    val = True
+    CX1 = bytearray(a ^ b for a, b in zip(Y_array[16*(i+2):16*(i+3)], mensajes[2-i]))
+    C.append(CX1)
+    CX0 = cookie[i*16: (i+1)*16];CX0_real = cookie[i*16: (i+1)*16]
+    X = X_array[i*16: (i+1)*16]
+    P = P_array[(i+1)*16: (i+2)*16]
+    Y = Y_array[(i+1)*16: (i+2)*16]
+    for j in range(15,-1,-1):
+            for k in range(15,j,-1):
+                CX0[k] = Y[k] ^ (16-j) 
+            for byte_value in range(256):
+                CX0[j] = byte_value
+                val = padding_valido(bytes(CX0 + CX1))
+                if val: 
+                    Y[j] = byte_value ^ (16-j) 
+                    P[j] = Y[j] ^ CX0_real[j]
+                    break
+            if not val:
+                print("no funcionó")
+                break
+    X_array[i*16: (i+1)*16] = X
+    Y_array[(i+1)*16: (i+2)*16] = Y
+    P_array[(i+1)*16: (i+2)*16] = P
+
+## Calculo IV
+C.append(bytearray(a ^ b for a, b in zip(Y_array[16:32], b'{"username":"inv')))
+f.write(( C[3] + C[2] + C[1] + C[0] + cookie[64:]).hex().encode() + b"\n"); f.flush()
+print(f.readline())
+
+
+
 
 
 
