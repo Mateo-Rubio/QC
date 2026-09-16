@@ -1,6 +1,4 @@
 import socket
-import math
-import os
 s = socket.socket(); s.connect(("32.199.164.87", 1342))
 f = s.makefile("rwb")
 enc = None
@@ -24,7 +22,6 @@ def descifrar_cookie(cook: bytes) -> None:
     Yf_array = bytearray(16*max_blocks)
     Pf_array = bytearray(16*max_blocks)
     for i in range(max_blocks-1):
-        val = True
         C1 = cookie[i*16: (i+1)*16];C1_real = cookie[i*16: (i+1)*16]
         C2 = cookie[(i+1)*16: (i+2)*16]
         X = Xf_array[i*16: (i+1)*16]
@@ -49,7 +46,7 @@ def descifrar_cookie(cook: bytes) -> None:
         Yf_array[(i+1)*16: (i+2)*16] = Y
         Pf_array[(i+1)*16: (i+2)*16] = P
         if not val: 
-            break 
+            break
     return Xf_array, Yf_array, Pf_array
 
 '''
@@ -60,58 +57,41 @@ Bloque C [48:64]: ":"false","expir
 Bloque D [64:80]: es":"2020-01-01"
 Bloque E [80:96]: } + padding
 '''
-if os.path.exists('archivo.bin'):
-    with open('archivo.bin', 'rb') as f:
-        data = f.read()
-    tam = len(data) // 3
-    Y_array = bytearray(data[0:tam])
-    X_array = bytearray(data[tam:2*tam])
-    P_array = bytearray(data[2*tam:3*tam])
-else:
-    X_array, Y_array, P_array = descifrar_cookie(enc)
-    with open('archivo.bin', 'wb') as f:
-        f.write(Y_array)
-        f.write(X_array)
-        f.write(P_array)
-print("Plain text descifrado/cargado:", bytes(P_array).decode())
+X_array, Y_array, P_array = descifrar_cookie(enc)
+print("Plain text descifrado", repr(bytes(P_array)))
 C = []
 mensajes = [ b'es":"2099-12-31"', b'":"true" ,"expir', b'itado","is_admin', ]
 for i in range(2,-1,-1):
-    val = True
+    benc = bytearray(enc)
     CX1 = bytearray(a ^ b for a, b in zip(Y_array[16*(i+2):16*(i+3)], mensajes[2-i]))
     C.append(CX1)
-    CX0 = enc[i*16: (i+1)*16];CX0_real = enc[i*16: (i+1)*16]
+    CX0 = bytearray(benc[i*16: (i+1)*16]);CX0_real = benc[i*16: (i+1)*16]
     X = X_array[i*16: (i+1)*16]
     P = P_array[(i+1)*16: (i+2)*16]
     Y = Y_array[(i+1)*16: (i+2)*16]
     for j in range(15,-1,-1):
-            for k in range(15,j,-1):
-                CX0[k] = Y[k] ^ (16-j) 
-            for byte_value in range(256):
-                CX0[j] = byte_value
-                val = padding_valido(bytes(CX0 + CX1))
-                if val: 
-                    Y[j] = byte_value ^ (16-j) 
-                    P[j] = Y[j] ^ CX0_real[j]
-                    break
-            if not val:
-                print("no funcionó")
+        for k in range(15,j,-1):
+            CX0[k] = Y[k] ^ (16-j) 
+        for byte_value in range(256):
+            CX0[j] = byte_value
+            val = padding_valido(bytes(CX0 + CX1))
+            if val: 
+                Y[j] = byte_value ^ (16-j) 
+                P[j] = Y[j] ^ CX0_real[j]
                 break
+        if not val:
+            print("no funcionó")
+            break
     X_array[i*16: (i+1)*16] = X
     Y_array[(i+1)*16: (i+2)*16] = Y
     P_array[(i+1)*16: (i+2)*16] = P
+    if not val: 
+        break
 
 ## Calculo IV
 C.append(bytearray(a ^ b for a, b in zip(Y_array[16:32], b'{"username":"inv')))
-forged_cookie = C[3] + C[2] + C[1] + C[0] + enc[64:]
-_ = decifrar_cookie(forged_cookie)
+forged_cookie = C[3] + C[2] + C[1] + C[0] + benc[64:]
+_ = descifrar_cookie(forged_cookie)
+print("Forged Cookie descifrada", repr(bytes(P_array)))
 f.write(forged_cookie.hex().encode() + b"\n"); f.flush()
 print(f.readline())
-
-
-
-
-
-
-
-
