@@ -16,12 +16,11 @@ def padding_valido(cookie: bytes) -> bool:
     linea = f.readline()
     return b"Padding Invalido" not in linea
 
-max_blocks = math.ceil(len(enc)/16)
+max_blocks = 6
 cookie = bytearray(enc)
 X_array = bytearray(16*max_blocks)
-Y_array = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x007\x8d\x18(9h\x1e\xabb\t\xe3\x7f\xf2\x06f-\x02\x11f\x84\x8dWHo\xe5\t\xf6\xf2\xa7\xfbJ8\xab\x1e\xfdT\x91\x1d\xce\xe4J\x8anFu\x16*@k\xf0\xbf\xab\xc7\xf6\'2]|\xfeu\n9\xa9(5\xab!\x89"\xc6\x02\x93;Hqf\x07c\xcaP')
-P_array = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00{"username":"invitado","is_admin":"false","expires":"2020-01-01"}\x0f\x0f\x0f\x0f\x0f\x0f\x0f\x0f\x0f\x0f\x0f\x0f\x0f\x0f\x0f')
-'''
+Y_array = bytearray(16*max_blocks)
+P_array = bytearray(16*max_blocks)
 for i in range(max_blocks-1):
     val = True
     C1 = cookie[i*16: (i+1)*16];C1_real = cookie[i*16: (i+1)*16]
@@ -53,7 +52,6 @@ with open('archivo.bin', 'wb') as f:
     f.write(Y_array)
     f.write(X_array)
     f.write(P_array)
-'''
 
 '''
 IV            = cookie[0:16]
@@ -63,6 +61,7 @@ Bloque C [48:64]: ":"false","expir
 Bloque D [64:80]: es":"2020-01-01"
 Bloque E [80:96]: } + padding
 '''
+
 C = []
 mensajes = [ b'es":"2099-12-31"', b'":"true" ,"expir', b'itado","is_admin', ]
 for i in range(2,-1,-1):
